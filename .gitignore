@@ -14,10 +14,6 @@ dist/
 build/
 *.egg
 
-# 打包
-*.exe
-*.spec
-
 # 环境
 .env
 .venv/

@@ -21,6 +21,13 @@
 
 - `config.py` 新增待发货相关配置（DELIVERY_URL、CSS选择器、定时时间等）
 
+### 打包部署
+
+- **统一启动入口** `main.py`：整合改价/留言修改/GUI/调度，支持 `--version` 查看版本
+- **PyInstaller 打包**：`build.spec` + `build_exe.bat`，输出独立 EXE
+- **版本管理**：`version.py` 统一版本号
+- 输出文件：`dist/启小铺订单自动化.exe`（~56MB）
+
 ---
 
 ## v1.0.0 (2026-05-18)
