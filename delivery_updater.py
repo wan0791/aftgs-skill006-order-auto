@@ -358,8 +358,8 @@ class DeliveryUpdater:
             current_msg = textareas.nth(0).input_value()
             # 1. 替换"叫车"为"装车"
             new_msg = current_msg.replace('叫车', '装车')
-            # 2. 追加自动化标记
-            suffix = '——已自动化处理'
+            # 2. 追加自动化标记（前面2个空格隔开）
+            suffix = '  ——已自动化处理'
             if suffix not in new_msg:
                 new_msg = new_msg + suffix
 
