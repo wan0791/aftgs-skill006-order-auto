@@ -1,148 +1,111 @@
 # 阿凡提商贸 — 启小铺订单自动化（技能006）
 
-基于 Playwright Python 库的启小铺订单自动化处理工具。独立于 Claude Code Agent 运行，零 Token 消耗，支持 Windows 计划任务。
+基于 Playwright Python 库的启小铺订单自动化工具。独立运行，零 Token 消耗。
 
-## 功能
+---
 
-### v1.0.0 — 待付款订单改价+确认
+## 两大功能系统（完全独立，互不干扰）
 
-自动处理启小铺平台的待付款订单，支持 4 种留言指令：
+### 系统一：待付款订单改价（v1.0.0）
 
-| 买家留言 | 自动操作 |
-|---------|---------|
-| `改价30` | 改价到 ¥30 + 自动确认付款 |
-| `备用金50` | 改价到 ¥50，**不确认付款** |
-| `直接确认` / `确认付款` | 原价直接确认付款 |
-| 其他（噪音） | **跳过**（保守原则） |
+自动处理启小铺平台**待付款**订单的改价和确认付款。
 
-### v1.1.0 — 待发货订单留言修改
+| 买家留言 | 自动操作 | 是否修改留言 |
+|---------|---------|:----------:|
+| `改价30` | 改价到 ¥30 + 自动确认付款 | ❌ 不改 |
+| `备用金50` | 改价到 ¥50，**不确认付款** | ❌ 不改 |
+| `直接确认` / `确认付款` | 原价直接确认付款 | ❌ 不改 |
+| 其他（噪音） | **跳过**（保守原则） | ❌ 不改 |
 
-修改待发货订单中指定客户的留言内容。在凌晨 3 点自动执行：
+### 系统二：待发货留言修改（v1.1.0）
 
-- 筛选条件：收货人含"4号线"（排除14号线/24号线）且留言含"叫车"
-- 自动打开订单详情 → 修改留言 → 替换"叫车"为"装车" → 保存
-- 支持分页（自动翻页处理全部订单）
-- 支持定时调度（可配置 1-2 个时间点）
+在**待发货**订单中查找指定客户，自动修改留言内容。
+
+| 条件 | 操作 | 追加标记 |
+|:----|:----|:-------:|
+| 收货人含**「4号线」**（排除14号线/24号线等）<br>且 留言含**「叫车」** | 替换 `叫车` → `装车`<br>追加 `  "——已自动化处理"` | ✅ 追加 |
+
+> ⚠ **不影响改价订单**：本系统只处理待发货订单的留言，不改价格、不碰待付款订单。
+
+---
 
 ## 快速开始
 
 ### 环境要求
-
 - Python 3.12+
 - 已安装 Chrome 或 Edge 浏览器
 
 ### 安装
-
 ```bash
 pip install playwright requests
 playwright install chromium
 ```
 
-### 初始化登录
-
+### 初始化登录（仅首次）
 ```bash
 python init_login.py
-# 浏览器自动打开 → 手动登录 → 登录状态自动保存
+# 浏览器自动打开 → 手动登录启小铺 → 登录状态自动保存
 # 后续运行无需再次登录
 ```
 
-### 运行
-
-#### 待付款订单改价
-
-```bash
-# 单次运行（处理待付款订单）
-python run.py
-
-# 演习模式（只读不写，预览操作）
-python run.py --dry-run
-
-# 常驻模式（每 5 分钟一轮）
-python run.py --loop
-
-# API 模式（HTTP 直调，每单 <500ms）
-python run.py --api
-
-# GUI 控制台
-python gui.py
-```
-
-#### 待发货留言修改（v1.1.0）
-
-```bash
-# 单次运行
-python delivery_updater.py
-
-# 演习模式（只预览，不修改）
-python delivery_updater.py --dry-run
-
-# 定时调度模式（默认凌晨 3 点执行）
-python delivery_updater.py --schedule
-```
+---
 
 ## 启动方式
 
-| 方式 | 命令 | 说明 |
+### 打包 EXE（推荐）
+
+| 方式 | 命令 | 作用 |
 |------|------|------|
-| **双击 EXE** | `启小铺订单自动化.exe` | 默认启动 GUI 控制台 |
-| 命令行改价 | `启小铺订单自动化.exe --cli` | 待付款订单改价 |
-| 命令行常驻 | `启小铺订单自动化.exe --loop` | 改价常驻模式 |
-| 留言修改 | `启小铺订单自动化.exe --delivery` | 待发货留言修改 |
-| 留言演习 | `启小铺订单自动化.exe --delivery --dry-run` | 演习模式 |
-| 定时调度 | `启小铺订单自动化.exe --schedule` | 默认凌晨3点 |
+| **双击 EXE** | `启小铺订单自动化.exe` | 启动 GUI 控制台（标签页选择功能） |
+| 命令行改价 | `启小铺订单自动化.exe --cli` | 待付款订单改价（单次） |
+| 改价常驻 | `启小铺订单自动化.exe --loop` | 改价（每5分钟自动运行） |
+| 留言修改 | `启小铺订单自动化.exe --delivery` | 待发货留言修改（单次） |
+| 留言演习 | `启小铺订单自动化.exe --delivery --dry-run` | 演习模式（只预览不修改） |
+| 定时调度 | `启小铺订单自动化.exe --schedule` | 按设定时间自动执行留言修改 |
 | 版本信息 | `启小铺订单自动化.exe --version` | 查看版本号 |
 
-## 运行模式
+### 源码运行
 
-### 待付款改价系统
-
-| 模式 | 命令 | 说明 |
-|------|------|------|
-| 单次运行 | `python run.py` | 处理完自动退出 |
-| 常驻模式 | `python run.py --loop` | 每 5 分钟自动执行一轮 |
-| 演习模式 | `python run.py --dry-run` | 只读不写，安全预览操作 |
-| API 模式 | `python run.py --api` | HTTP 直调，每单 <500ms |
-| GUI 控制台 | `python gui.py` | 桌面界面，启动/暂停/停止 |
-
-### 待发货留言修改系统
-
-| 模式 | 命令 | 说明 |
-|------|------|------|
-| 单次运行 | `python delivery_updater.py` | 处理完自动退出 |
-| 演习模式 | `python delivery_updater.py --dry-run` | 只预览不修改 |
-| 定时调度 | `python delivery_updater.py --schedule` | 按预设时间自动执行 |
-
-## 项目结构
-
+#### 改价系统
+```bash
+python run.py              # 单次运行
+python run.py --loop       # 常驻模式（每5分钟）
+python run.py --dry-run    # 演习模式
+python run.py --api        # API 模式
+python gui.py              # GUI 控制台
 ```
-阿凡提技能006-启小铺订单自动化/
-├── run.py                   # 主入口（待付款订单处理）
-├── config.py                # 配置、日志、告警
-├── browser_automation.py    # Playwright 浏览器自动化
-├── message_parser.py        # 留言解析（白名单匹配）
-├── api_client.py            # HTTP API 客户端
-├── gui.py                   # tkinter GUI 控制台
-├── init_login.py            # 首次登录初始化
-├── delivery_updater.py      # 待发货留言修改（v1.1.0 新增）
-├── rules/                   # 业务规则文档
-│   ├── order-types.md
-│   ├── price-calculation.md
-│   └── safety-rules.md
-├── docs/
-│   └── changelog.md
-├── prompts/
-│   └── system.prompt        # 异常通知 Agent prompt
-└── data/                    # 运行时数据（已 gitignore）
-    ├── control.json         # 在线控制
-    ├── state.json           # 运行状态
-    ├── alerts.txt           # 异常告警
-    ├── logs/                # 运行日志
-    └── browser-profile/     # 浏览器登录状态
+
+#### 留言修改系统
+```bash
+python delivery_updater.py                    # 单次运行
+python delivery_updater.py --dry-run          # 演习模式
+python delivery_updater.py --schedule         # 定时调度
 ```
+
+---
+
+## GUI 控制台
+
+双击 EXE 打开图形界面，两个标签页：
+
+### 「改价处理」标签页
+- 启动/暂停/停止 按钮
+- 确认付款开关（安全模式/生产模式）
+- 实时日志 + 订单结果列表
+
+### 「留言修改」标签页
+- **▶ 执行修改**：正式执行留言修改
+- **▶ 演习模式**：只预览不修改
+- **■ 停止**：中断执行中的任务
+- **定时设置**：3个独立时间点（默认 `03:00`）
+- **⏰ 启动定时** / **■ 停止定时**：控制后台调度
+
+---
 
 ## 安全机制
 
-- **改价验证**：改价后强制 DOM 验证金额（容差 ±0.01）
+### 改价系统
+- **金额验证**：改价后强制 DOM 验证（容差 ±0.01）
 - **数据污染检测**：改价前读取服务端真实值，校验未被污染
 - **备用金规则**：含"备用金"的订单改价后不确认付款
 - **连续失败保护**：连续 3 单失败自动停止并告警
@@ -150,11 +113,55 @@ python delivery_updater.py --schedule
 - **超时保护**：软超时 10 分钟 + 硬超时 11 分钟
 - **上限控制**：单次最多处理 15 单
 
-## 定时任务（Windows）
+### 留言修改系统
+- **演习模式**：只预览匹配结果，不实际修改
+- **独立控制文件**：不与改价系统冲突
+- **独立运行锁** + **独立日志文件**
 
-```cmd
-schtasks /create /tn "启小铺订单处理" /tr "python D:\Path\To\run.py" /sc minute /mo 5
+---
+
+## 项目结构
+
 ```
+阿凡提技能006-启小铺订单自动化/
+│
+├── run.py                   # 改价系统入口（待付款订单）
+├── delivery_updater.py      # 留言修改系统（待发货订单）★ 新增 v1.1.0
+├── main.py                  # 统一启动入口（整合两个系统）
+├── gui.py                   # GUI 控制台（双标签页）
+│
+├── config.py                # 配置、日志、告警
+├── browser_automation.py    # Playwright 浏览器自动化
+├── message_parser.py        # 留言解析（改价专用）
+├── api_client.py            # HTTP API 客户端
+├── init_login.py            # 首次登录初始化
+│
+├── version.py               # 版本号管理
+├── build.spec               # PyInstaller 打包配置
+├── build_exe.bat            # 打包脚本
+│
+├── rules/                   # 业务规则文档
+├── docs/                    # 文档
+├── prompts/                 # Agent prompt
+└── data/                    # 运行时数据（已 gitignore）
+    ├── control.json             # 改价系统控制
+    ├── delivery_control.json    # 留言修改系统控制
+    ├── state.json               # 运行状态
+    ├── alerts.txt               # 异常告警
+    ├── logs/                    # 运行日志
+    └── browser-profile/         # 浏览器登录状态
+```
+
+---
+
+## 版本历史
+
+| 版本 | 日期 | 说明 |
+|------|------|------|
+| v1.1.0 | 2026-07-06 | 新增留言修改系统、GUI双标签页、EXE打包 |
+| v1.0.0 | 2026-05-18 | 初始版本：待付款改价+确认 |
+
+---
 
 ## 技术栈
 
@@ -162,8 +169,11 @@ schtasks /create /tn "启小铺订单处理" /tr "python D:\Path\To\run.py" /sc 
 - **浏览器驱动**: Playwright Python
 - **HTTP 客户端**: requests（API 模式）
 - **GUI**: tkinter（标准库）
-- **运行方式**: CLI / Windows 计划任务
+- **打包**: PyInstaller
+- **运行方式**: 独立 EXE / CLI / Windows 计划任务
+
+---
 
 ## 许可
 
-本项目为江西阿凡提商贸有限公司内部工具。
+江西阿凡提商贸有限公司内部工具。
