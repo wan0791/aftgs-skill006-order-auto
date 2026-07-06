@@ -356,10 +356,15 @@ class DeliveryUpdater:
 
             # 第 1 个 textarea 就是留言编辑框
             current_msg = textareas.nth(0).input_value()
+            # 1. 替换"叫车"为"装车"
             new_msg = current_msg.replace('叫车', '装车')
+            # 2. 追加自动化标记
+            suffix = '——已自动化处理'
+            if suffix not in new_msg:
+                new_msg = new_msg + suffix
 
             if new_msg == current_msg:
-                logger.warn(f"  [WARN] {order_id}: 留言中未找到'叫车'，跳过")
+                logger.warn(f"  [WARN] {order_id}: 留言未变化，跳过")
                 self.skipped += 1
                 return False
 
