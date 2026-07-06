@@ -352,6 +352,7 @@ class App:
 
         # 状态变量（留言修改）
         self._delivery_running = False
+        self._delivery_schedule_flag = False
 
         self._build_ui()
         self._load_state()
@@ -486,7 +487,9 @@ class App:
         ttk.Label(btn_frame, text="(24h制)").pack(side=tk.LEFT, padx=(2, 0))
 
         self.btn_dv_schedule = ttk.Button(btn_frame, text="⏰ 启动定时", command=self._delivery_schedule, width=10)
-        self.btn_dv_schedule.pack(side=tk.RIGHT, padx=3)
+        self.btn_dv_schedule.pack(side=tk.RIGHT, padx=2)
+        self.btn_dv_schedule_stop = ttk.Button(btn_frame, text="■ 停止定时", command=self._delivery_schedule_stop, width=10, state=tk.DISABLED)
+        self.btn_dv_schedule_stop.pack(side=tk.RIGHT, padx=2)
 
         # 日志
         log_frame = ttk.LabelFrame(tab, text="运行日志", padding=3)
@@ -532,6 +535,7 @@ class App:
         self.btn_dv_dry.config(state=tk.DISABLED)
         self.btn_dv_stop.config(state=tk.NORMAL)
         self.btn_dv_schedule.config(state=tk.DISABLED)
+        self.btn_dv_schedule_stop.config(state=tk.DISABLED)
         self.dv_status_label.config(text="▶ 运行中", foreground="blue")
         self._delivery_log(f"{'[演习] ' if dry_run else ''}开始...")
 
@@ -541,6 +545,11 @@ class App:
             self.btn_dv_dry.config(state=tk.NORMAL)
             self.btn_dv_stop.config(state=tk.DISABLED)
             self.btn_dv_schedule.config(state=tk.NORMAL)
+            # 如果定时调度还在运行，保留停止按钮可用
+            if self._delivery_schedule_flag:
+                self.btn_dv_schedule_stop.config(state=tk.NORMAL)
+            else:
+                self.btn_dv_schedule_stop.config(state=tk.DISABLED)
             self.dv_status_label.config(text="● 就绪", foreground="green")
 
         def thread_func():
@@ -577,11 +586,14 @@ class App:
         if not times:
             self._delivery_log("⚠ 请至少设置一个执行时间")
             return
-        self._delivery_log(f"定时调度启动，执行时间: {', '.join(times)}")
+
+        self._delivery_schedule_flag = True
+        self.btn_dv_schedule.config(state=tk.DISABLED)
+        self.btn_dv_schedule_stop.config(state=tk.NORMAL)
+        self._delivery_log(f"⏰ 定时调度启动，执行时间: {', '.join(times)}")
 
         def scheduler():
-            global _shutdown_flag
-            while not _shutdown_flag:
+            while self._delivery_schedule_flag:
                 now = datetime.now().strftime("%H:%M")
                 if now in times:
                     self.root.after(0, lambda: self._delivery_log(f"⏰ 到达定时时间 {now}，执行修改"))
@@ -592,10 +604,17 @@ class App:
                     )
                     time.sleep(62)
                 time.sleep(30)
+            self.root.after(0, lambda: self._delivery_log("⏹ 定时调度已停止"))
 
         t = threading.Thread(target=scheduler, daemon=True)
         t.start()
-        self._delivery_log("✅ 定时调度已启动（后台运行）")
+
+    def _delivery_schedule_stop(self):
+        """停止定时调度"""
+        self._delivery_schedule_flag = False
+        self.btn_dv_schedule.config(state=tk.NORMAL)
+        self.btn_dv_schedule_stop.config(state=tk.DISABLED)
+        self._delivery_log("⏹ 正在停止定时调度...")
 
     # ── 改价操作 ──
 
