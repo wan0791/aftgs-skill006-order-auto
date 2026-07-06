@@ -15,9 +15,14 @@
 | `直接确认` / `确认付款` | 原价直接确认付款 |
 | 其他（噪音） | **跳过**（保守原则） |
 
-### 待开发 — 待发货留言修改
+### v1.1.0 — 待发货订单留言修改
 
-修改待发货订单中指定客户的留言内容（将"叫车"改为"装车"）。
+修改待发货订单中指定客户的留言内容。在凌晨 3 点自动执行：
+
+- 筛选条件：收货人含"4号线"（排除14号线/24号线）且留言含"叫车"
+- 自动打开订单详情 → 修改留言 → 替换"叫车"为"装车" → 保存
+- 支持分页（自动翻页处理全部订单）
+- 支持定时调度（可配置 1-2 个时间点）
 
 ## 快速开始
 
@@ -43,6 +48,8 @@ python init_login.py
 
 ### 运行
 
+#### 待付款订单改价
+
 ```bash
 # 单次运行（处理待付款订单）
 python run.py
@@ -60,7 +67,22 @@ python run.py --api
 python gui.py
 ```
 
+#### 待发货留言修改（v1.1.0）
+
+```bash
+# 单次运行
+python delivery_updater.py
+
+# 演习模式（只预览，不修改）
+python delivery_updater.py --dry-run
+
+# 定时调度模式（默认凌晨 3 点执行）
+python delivery_updater.py --schedule
+```
+
 ## 运行模式
+
+### 待付款改价系统
 
 | 模式 | 命令 | 说明 |
 |------|------|------|
@@ -69,6 +91,14 @@ python gui.py
 | 演习模式 | `python run.py --dry-run` | 只读不写，安全预览操作 |
 | API 模式 | `python run.py --api` | HTTP 直调，每单 <500ms |
 | GUI 控制台 | `python gui.py` | 桌面界面，启动/暂停/停止 |
+
+### 待发货留言修改系统
+
+| 模式 | 命令 | 说明 |
+|------|------|------|
+| 单次运行 | `python delivery_updater.py` | 处理完自动退出 |
+| 演习模式 | `python delivery_updater.py --dry-run` | 只预览不修改 |
+| 定时调度 | `python delivery_updater.py --schedule` | 按预设时间自动执行 |
 
 ## 项目结构
 
@@ -81,7 +111,7 @@ python gui.py
 ├── api_client.py            # HTTP API 客户端
 ├── gui.py                   # tkinter GUI 控制台
 ├── init_login.py            # 首次登录初始化
-├── delivery_updater.py      # [开发中] 待发货留言修改
+├── delivery_updater.py      # 待发货留言修改（v1.1.0 新增）
 ├── rules/                   # 业务规则文档
 │   ├── order-types.md
 │   ├── price-calculation.md

@@ -21,6 +21,32 @@ LOGIN_URL = f"{BASE_URL}/Public/login.html"
 ORDERS_URL = f"{BASE_URL}/Order/lists/type/0/status/0/"
 
 # ============================================================================
+# 待发货留言修改配置
+# ============================================================================
+
+# 待发货页面 URL（status/1 = 待发货）
+DELIVERY_URL = ("https://sp.huiyuandao.com/Order/lists/type/0/status/1/"
+                "dls_id/0/gys_id/0/tuan_id/0/order_ly/0/is_virtual/"
+                "user_group_id/user_group_id/")
+
+# 定时执行时间（24小时制，HH:MM 格式，可设 1-2 个）
+DELIVERY_UPDATE_TIMES = ["03:00"]
+
+# 4号线精确匹配正则（负向零宽断言：前面不能是数字，排除"14号线""24号线"等）
+RE_LINE_4 = r'(?<!\d)4号线'
+
+# 待发货页面操作选择器（已通过实际页面验证）
+SEL_DETAIL_LINK   = 'a[href*="/Order/detail/"]'           # 查看详情链接
+SEL_NEXT_PAGE     = 'a.next'                               # 下一页按钮
+SEL_USER_LINK     = 'a[href*="/User/detail/"]'             # 收货人链接
+SEL_MSG_PARAGRAPH = 'p.message'                            # 留言元素
+SEL_ORDER_CHECKBOX = 'input[type=checkbox]'                # 订单checkbox(data-id)
+SEL_MODIFY_MSG    = '#j-feedback-mdf'                      # 修改留言按钮
+SEL_MSG_TEXTAREA  = 'textarea'                              # 留言输入框（第1个）
+SEL_SAVE_BTN      = '#j-feedback-mdf-save'                 # 保存按钮
+SEL_CANCEL_BTN    = '#j-feedback-mdf-cancel'               # 取消按钮
+
+# ============================================================================
 # 浏览器配置
 # ============================================================================
 
