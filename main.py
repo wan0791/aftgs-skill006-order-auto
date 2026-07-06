@@ -3,10 +3,10 @@
 """
 启小铺订单自动化 — 统一启动入口
 
-用法：
-    main.exe                  → 待付款改价（单次运行）
+用法（命令行）:
+    main.exe                  → 启动 GUI 控制台（默认，双击运行）
+    main.exe --cli            → 待付款改价（命令行单次运行）
     main.exe --loop           → 待付款改价（常驻模式）
-    main.exe --gui            → 启动 GUI 控制台
     main.exe --delivery       → 待发货留言修改（单次运行）
     main.exe --delivery --dry-run  → 待发货留言修改（演习模式）
     main.exe --schedule       → 定时调度模式（默认凌晨3点执行留言修改）
@@ -38,28 +38,38 @@ def main():
         print(f"构建日期: {__build_date__}")
         return
 
-    # ── GUI 模式 ──
-    if '--gui' in args:
-        from gui import main as gui_main
-        gui_main()
+    # ── 命令行改价模式（显式指定 --cli 或 --run） ──
+    if '--cli' in args or '--run' in args:
+        from run import main as run_main
+        run_main()
         return
 
     # ── 待发货留言修改 ──
-    if '--delivery' in args or '--schedule' in args:
+    if '--delivery' in args:
         from delivery_updater import main as delivery_main
-        # 传递相关参数（排除已处理的 main.exe 本身）
         delivery_args = ['delivery_updater.py']
         if '--dry-run' in args:
             delivery_args.append('--dry-run')
-        if '--schedule' in args:
-            delivery_args.append('--schedule')
         sys.argv = delivery_args
         delivery_main()
         return
 
-    # ── 默认：待付款改价 ──
-    from run import main as run_main
-    run_main()
+    # ── 定时调度 ──
+    if '--schedule' in args:
+        from delivery_updater import main as delivery_main
+        sys.argv = ['delivery_updater.py', '--schedule']
+        delivery_main()
+        return
+
+    # ── 常驻模式 ──
+    if '--loop' in args:
+        from run import main as run_main
+        run_main()
+        return
+
+    # ── 默认（无参数）：启动 GUI 控制台 ──
+    from gui import main as gui_main
+    gui_main()
 
 
 if __name__ == '__main__':

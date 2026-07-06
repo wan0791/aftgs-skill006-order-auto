@@ -80,6 +80,18 @@ python delivery_updater.py --dry-run
 python delivery_updater.py --schedule
 ```
 
+## 启动方式
+
+| 方式 | 命令 | 说明 |
+|------|------|------|
+| **双击 EXE** | `启小铺订单自动化.exe` | 默认启动 GUI 控制台 |
+| 命令行改价 | `启小铺订单自动化.exe --cli` | 待付款订单改价 |
+| 命令行常驻 | `启小铺订单自动化.exe --loop` | 改价常驻模式 |
+| 留言修改 | `启小铺订单自动化.exe --delivery` | 待发货留言修改 |
+| 留言演习 | `启小铺订单自动化.exe --delivery --dry-run` | 演习模式 |
+| 定时调度 | `启小铺订单自动化.exe --schedule` | 默认凌晨3点 |
+| 版本信息 | `启小铺订单自动化.exe --version` | 查看版本号 |
+
 ## 运行模式
 
 ### 待付款改价系统
