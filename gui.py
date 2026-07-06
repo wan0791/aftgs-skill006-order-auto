@@ -467,11 +467,23 @@ class App:
         self.btn_dv_stop = ttk.Button(btn_frame, text="■ 停止", command=self._delivery_stop, width=8, state=tk.DISABLED)
         self.btn_dv_stop.pack(side=tk.LEFT, padx=3)
 
-        # 参数
-        ttk.Label(btn_frame, text=" 定时:").pack(side=tk.LEFT, padx=(20, 0))
-        self.dv_time_var = tk.StringVar(value="03:00")
-        ttk.Entry(btn_frame, textvariable=self.dv_time_var, width=8).pack(side=tk.LEFT, padx=3)
-        ttk.Label(btn_frame, text="(24h)").pack(side=tk.LEFT)
+        # 定时设置
+        ttk.Separator(btn_frame, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=10)
+        ttk.Label(btn_frame, text="定时执行:").pack(side=tk.LEFT)
+
+        time_frame = ttk.Frame(btn_frame)
+        time_frame.pack(side=tk.LEFT, padx=3)
+
+        self.dv_time_vars = []
+        for i in range(3):
+            var = tk.StringVar(value="03:00" if i == 0 else "")
+            entry = ttk.Entry(time_frame, textvariable=var, width=6)
+            entry.pack(side=tk.LEFT, padx=1)
+            if i < 2:
+                ttk.Label(time_frame, text=",").pack(side=tk.LEFT)
+            self.dv_time_vars.append(var)
+
+        ttk.Label(btn_frame, text="(24h制)").pack(side=tk.LEFT, padx=(2, 0))
 
         self.btn_dv_schedule = ttk.Button(btn_frame, text="⏰ 启动定时", command=self._delivery_schedule, width=10)
         self.btn_dv_schedule.pack(side=tk.RIGHT, padx=3)
@@ -561,8 +573,11 @@ class App:
             self._delivery_log("⚠ 已有任务在运行，请先停止")
             return
 
-        times = [t.strip() for t in self.dv_time_var.get().split(',')]
-        self._delivery_log(f"定时调度启动，执行时间: {times}")
+        times = [v.get().strip() for v in self.dv_time_vars if v.get().strip()]
+        if not times:
+            self._delivery_log("⚠ 请至少设置一个执行时间")
+            return
+        self._delivery_log(f"定时调度启动，执行时间: {', '.join(times)}")
 
         def scheduler():
             global _shutdown_flag
