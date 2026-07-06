@@ -40,13 +40,18 @@ from config import (
 )
 from browser_automation import BrowserAutomation
 
-# ── 路径 ──
-ROOT = Path(__file__).parent
+# ── 路径（PyInstaller 兼容） ──
+if getattr(sys, 'frozen', False):
+    ROOT = Path(sys.executable).parent
+else:
+    ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 CONTROL_FILE = DATA_DIR / "delivery_control.json"
 STATE_FILE = DATA_DIR / "delivery_state.json"
 LOCK_FILE = DATA_DIR / "delivery_running.lock"
-LOG_DIR = ROOT / "data" / "logs"
+LOG_DIR = DATA_DIR / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── 信号处理 ──
 _shutdown_flag = False
