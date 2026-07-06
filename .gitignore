@@ -16,6 +16,7 @@ build/
 
 # 构建产物
 logo.ico
+__icon_*.png
 
 # 环境
 .env
